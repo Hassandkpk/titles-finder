@@ -1,8 +1,8 @@
-import openai
-import os
+from openai import OpenAI
+import streamlit as st
 
-# Set your OpenAI API key here or use environment variables
-openai.api_key = os.getenv("OPENAI_API_KEY")  
+# Initialize OpenAI client
+client = OpenAI()
 
 def generate_metadata(niche: str, keywords: str) -> str:
     prompt = f"""
@@ -28,11 +28,14 @@ Tags:
 
 Hashtags:
 """
-    response = openai.Completion.create(
-        engine="gpt-4o-mini",
-        prompt=prompt,
-        max_tokens=350,
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are an expert YouTube strategist for faceless story channels."},
+            {"role": "user", "content": prompt}
+        ],
         temperature=0.8,
-        n=1
+        max_tokens=350,
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message.content.strip()
