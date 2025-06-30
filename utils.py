@@ -1,41 +1,37 @@
-from openai import OpenAI
 import streamlit as st
+from utils import generate_metadata_with_retry
 
-# Initialize OpenAI client
-client = OpenAI()
+def main():
+    st.title("Story Channel Metadata & SEO Optimizer")
 
-def generate_metadata(niche: str, keywords: str) -> str:
-    prompt = f"""
-You are an expert YouTube strategist for faceless story channels.
-Niche: "{niche}"
-Story Keywords: "{keywords}"
+    niches = [
+        "True Crime Stories",
+        "Paranormal Encounters",
+        "Survival Stories",
+        "Celebrity Scandals",
+        "Revenge & Payback Stories",
+        "Relationship Breakups",
+        "Workplace Horror Stories",
+        "Family Feuds & Drama",
+        "Unsolved Mysteries",
+        "Alien Abduction & UFO Sightings",
+        # Add more niches as needed
+    ]
 
-Generate 5 clickable, emotional YouTube titles using popular story clickbait styles.
-Then generate a compelling video description with an emotional hook, keywords, CTAs, and hashtags.
+    niche = st.selectbox("Select Story Niche", niches)
+    keywords = st.text_area("Enter story keywords or short topic summary", height=100)
 
-Output format:
+    if st.button("Generate Metadata"):
+        if keywords.strip() == "":
+            st.error("Please enter keywords or story summary.")
+        else:
+            with st.spinner("Generating..."):
+                try:
+                    result = generate_metadata_with_retry(niche, keywords)
+                    st.subheader("Generated Metadata")
+                    st.code(result)
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
-Titles:
-1.
-2.
-3.
-4.
-5.
-
-Description:
-
-Tags:
-
-Hashtags:
-"""
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are an expert YouTube strategist for faceless story channels."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.8,
-        max_tokens=350,
-    )
-    return response.choices[0].message.content.strip()
+if __name__ == "__main__":
+    main()
